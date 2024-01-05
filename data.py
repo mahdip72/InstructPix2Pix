@@ -145,12 +145,6 @@ class SDDataset(Dataset):
     def __init__(self, tokenizer, config):
         self.datadir = config.train_settings.data_dir
 
-        if type(config.train_settings.fixed_prompt) == str:
-            self.fixed_prompt = config.train_settings.fixed_prompt
-        else:
-            self.fixed_prompt = False
-
-        self.prompt_suffix = config.train_settings.prompt_suffix
         self.tokenizer = tokenizer
         self.samples = load_parquet_dataset(self.datadir)
 
@@ -263,37 +257,37 @@ class SDDataset(Dataset):
                 input_image = hflip(input_image)
                 target_image = hflip(target_image)
 
-        input_ids = self.tokenize_captions(captions, self.tokenizer)
+        input_ids = tokenize_captions(captions, self.tokenizer)
         result = dict(original_pixel_values=input_image, edited_pixel_values=target_image, input_ids=input_ids,
                       caption=captions)
 
         return result
 
-    @staticmethod
-    def tokenize_captions(captions, tokenizer):
-        """
-        Tokenizes captions using a specified tokenizer.
 
-        This method processes a given caption (or a list of captions) using the provided tokenizer.
-        It sets the maximum length to the tokenizer's model maximum length, applies padding and
-        truncation to ensure uniform length, and converts the tokens to PyTorch tensors. The method
-        is particularly useful for preparing textual data for input to machine learning models,
-        especially those in NLP.
+def tokenize_captions(captions, tokenizer):
+    """
+    Tokenizes captions using a specified tokenizer.
 
-        Parameters:
-        captions (str or list of str): The caption(s) to be tokenized. Can be a single string or a list of strings.
-        tokenizer (Tokenizer): The tokenizer to be used. This should be an instance of a pre-trained tokenizer
-                               compatible with the model being used, typically provided by NLP libraries like
-                               Hugging Face's Transformers.
+    This function processes a given caption (or a list of captions) using the provided tokenizer.
+    It sets the maximum length to the tokenizer's model maximum length, applies padding and
+    truncation to ensure uniform length, and converts the tokens to PyTorch tensors. The method
+    is particularly useful for preparing textual data for input to machine learning models,
+    especially those in NLP.
 
-        Returns:
-        Tensor: A PyTorch tensor of token IDs corresponding to the input captions. If multiple captions are
-                provided, the tensor will have a leading dimension equal to the number of captions.
-        """
-        inputs = tokenizer(
-            captions, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
-        )
-        return inputs.input_ids.squeeze()
+    Parameters:
+    captions (str or list of str): The caption(s) to be tokenized. Can be a single string or a list of strings.
+    tokenizer (Tokenizer): The tokenizer to be used. This should be an instance of a pre-trained tokenizer
+                           compatible with the model being used, typically provided by NLP libraries like
+                           Hugging Face's Transformers.
+
+    Returns:
+    Tensor: A PyTorch tensor of token IDs corresponding to the input captions. If multiple captions are
+            provided, the tensor will have a leading dimension equal to the number of captions.
+    """
+    inputs = tokenizer(
+        captions, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
+    )
+    return inputs.input_ids
 
 
 def cv2_show(input_img, target_img):
