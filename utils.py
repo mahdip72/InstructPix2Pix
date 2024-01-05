@@ -1,5 +1,5 @@
 import torch
-import logging
+import logging as log
 import os
 import yaml
 from box import Box
@@ -7,31 +7,19 @@ from diffusers.optimization import get_scheduler
 import torch.nn.functional as F
 
 
-def get_logging(result_path, log_level):
-    """
-    Sets up the logging configuration and returns a logging object.
+def get_logging(result_path, log_level=log.INFO):
+    logger = log.getLogger(result_path)
+    logger.setLevel(log_level)
 
-    Args:
-        result_path (str): The path where the log file will be saved.
-        log_level (int): The desired logging level.
+    fh = log.FileHandler(os.path.join(result_path, "logs.txt"))
+    formatter = log.Formatter('%(asctime)s - %(message)s')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
-    Returns:
-        logging.Logger: The logging object that can be used to log messages.
+    sh = log.StreamHandler()
+    logger.addHandler(sh)
 
-    """
-    # Configure the logging system
-    logging.basicConfig(
-        filename=os.path.join(result_path, "logs.txt"),
-        format='%(asctime)s - %(message)s',
-        filemode='a',
-        level=log_level
-    )
-
-    # Add a StreamHandler to display log messages on the console
-    logging.getLogger().addHandler(logging.StreamHandler())
-
-    # Return the logging object
-    return logging
+    return logger
 
 
 def prepare_optimizer(config, accelerator, parameters):
