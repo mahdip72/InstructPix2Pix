@@ -40,7 +40,11 @@ __Note__: You could set your custom checkpoints or huggingface checkpoint, e.g.,
 
 
 ### Prepare Dataset
-Will be completed.
+Download a test dataset ([link](https://huggingface.co/datasets/fusing/instructpix2pix-1000-samples)) and
+add its directory in the config file.
+
+
+This section will be completed...
 
 ### Train
 
