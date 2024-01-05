@@ -61,9 +61,8 @@ Once the training is finished the model will be saved to a folder called "save_r
 After a training is finished, the following directories will be available in the `save_results/timestamp` directory:
 1) **diffusers_checkpoint**: This directory can be used for getting inference with diffusers library.
 2) **accelerator_checkpoints**: This directory can be used for resume training. The numbers in the directories' names show the global step. 
-In order to use it for inference you have to convert it using  
-3) **Images_log**: A folder including images on the evaluation images in different evaluation steps (or epochs).
-4) **lora_checkpoints**: To do (this directory would be used for getting inference with low rank adaptation).
+In order to use it for inference you have to convert it using
+3) **lora_checkpoints**: To do (this directory would be used for getting inference with low rank adaptation).
 
 We can simply use our fine-tuned model using the following code:
 
