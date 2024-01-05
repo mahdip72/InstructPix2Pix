@@ -24,8 +24,6 @@ def main(yaml_config_path):
 
     config = Box(dict_config)
 
-    # logger = get_logger(__name__, log_level="INFO")
-
     # making saving directories
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d__%H-%M-%S')
     logging_dir = os.path.abspath(os.path.join(config.logging_dir, timestamp))
