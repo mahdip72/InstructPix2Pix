@@ -19,7 +19,25 @@ from box import Box
 
 
 def load_parquet_dataset(data_path):
+    """
+    Load a dataset of image pairs and their edit prompts from a Parquet file.
 
+    This function reads a Parquet file specified by the 'data_path'. It expects
+    the Parquet file to contain a DataFrame with at least three columns: 'input_image',
+    'edited_image', and 'edit_prompt'. The 'input_image' and 'edited_image' columns
+    should contain binary image data, while 'edit_prompt' contains the associated text prompts.
+
+    The function iterates over each row in the DataFrame, converts the binary image data
+    into PIL Image objects for both 'input_image' and 'edited_image', and stores these
+    images along with their corresponding 'edit_prompt' in a list.
+
+    Parameters:
+    data_path (str): The file path to the Parquet file containing the dataset.
+
+    Returns:
+    list: A list of tuples, each containing a pair of PIL Image objects (input and edited images)
+          and the associated edit prompt string.
+    """
     samples = []
     # Read the Parquet file into a pandas DataFrame
     df = pd.read_parquet(data_path, engine='pyarrow')
@@ -44,6 +62,30 @@ def load_parquet_dataset(data_path):
 
 
 class SquarePad:
+    """
+    A callable class that pads an image to make it square.
+
+    This class is designed to transform an input image into a square-shaped image
+    by adding padding. It calculates the necessary padding to be added to the
+    sides of the image (both horizontally and vertically) to ensure the final
+    image is square. The padding is applied equally to all sides of the image.
+
+    The padding is filled with a constant value (defaulting to zero, representing
+    black in most image formats). The class uses a specified padding function,
+    typically from a library like PIL or NumPy, to apply the padding.
+
+    Methods:
+    __call__(self, image): Takes a PIL Image or similar object, computes the required padding
+                           to make the image square, and returns the padded image.
+
+    Example usage:
+    square_padder = SquarePad()
+    square_image = square_padder(original_image)
+
+    Note:
+    The class assumes that the 'pad' function is available under the 'function' namespace
+    and follows the signature function.pad(image, padding, fill, padding_mode).
+    """
     def __call__(self, image):
         w, h = image.size
         max_wh = np.max([w, h])
@@ -54,6 +96,54 @@ class SquarePad:
 
 
 class SDDataset(Dataset):
+    """
+    A PyTorch Dataset class for loading and processing data for the Instruct Pix2Pix model,
+    which is based on the Stable Diffusion model.
+
+    This dataset loader is designed to handle images and corresponding captions from a Parquet file.
+    It includes data augmentation methods like random horizontal flipping and rotation,
+    and preprocesses images by resizing and normalizing them.
+
+    Attributes:
+    - datadir (str): Directory path where the Parquet dataset is stored.
+    - fixed_prompt (str or bool): A fixed prompt if specified; otherwise False.
+    - prompt_suffix (str): A suffix to append to prompts.
+    - tokenizer (Tokenizer): A tokenizer for processing captions.
+    - samples (list): Loaded dataset samples.
+    - swap_input_output (bool): Whether to swap input and output images.
+    - rand_horizontal_flip (bool): Whether to randomly flip images horizontally.
+    - rotation (bool): Whether to randomly rotate images.
+    - base_size (int): Base resolution for initial image cropping.
+    - final_size (int): Final resolution of the images.
+    - train_transforms (Compose): Composed PyTorch transforms for training data preprocessing.
+
+    Methods:
+    - __init__(self, tokenizer, config): Initializes the SDDataset instance.
+                                      - tokenizer (Tokenizer): The tokenizer used for processing captions.
+                                                               This should be an instance of a tokenizer compatible
+                                                               with the captions in the dataset, typically provided
+                                                               by libraries like Hugging Face's Transformers.
+                                      - config (object): A configuration object containing various settings for
+                                                         data loading and preprocessing. This should include
+                                                         attributes for training settings, augmentations, and
+                                                         other necessary configurations specific to the Instruct
+                                                         Pix2Pix model.
+    - tensor_to_pil(image_tensor): Converts a PyTorch tensor to a PIL Image.
+    - pil_to_cv2(pil_image): Converts a PIL Image to a NumPy array (OpenCV format).
+    - cv2_to_pil(cv2_image): Converts a NumPy array (OpenCV format) to a PIL Image.
+    - pad_to_square(image_tensor): Pads a tensor image to make it square.
+    - __len__(): Returns the length of the dataset.
+    - __getitem__(i): Retrieves the i-th item from the dataset.
+    - tokenize_captions(captions, tokenizer): Tokenizes captions using the provided tokenizer.
+
+    Example usage:
+    dataset = SDDataset(tokenizer, config)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+    Note:
+    This class is specifically tailored for the Instruct Pix2Pix model and assumes the presence of specific
+    fields in the configuration and dataset structure.
+    """
     def __init__(self, tokenizer, config):
         self.datadir = config.train_settings.data_dir
 
@@ -83,6 +173,21 @@ class SDDataset(Dataset):
 
     @staticmethod
     def tensor_to_pil(image_tensor):
+        """
+        Converts a PyTorch tensor to a PIL Image.
+
+        This method takes an image in the form of a PyTorch tensor, converts it to a NumPy array,
+        rescales its values to the range [0, 255], and then converts it to a PIL Image. This is
+        useful for visualizing PyTorch tensors or for further processing using PIL library functions.
+
+        Parameters:
+        image_tensor (Tensor): A PyTorch tensor representing an image. The tensor is expected to have
+                               the shape (C, H, W), where C is the number of channels, H is the height,
+                               and W is the width of the image.
+
+        Returns:
+        Image: A PIL Image object corresponding to the input tensor.
+        """
         # Convert the PyTorch tensor to a NumPy array
         image_np = image_tensor.squeeze().numpy()
 
@@ -168,29 +273,29 @@ class SDDataset(Dataset):
 
     @staticmethod
     def tokenize_captions(captions, tokenizer):
+        """
+        Tokenizes captions using a specified tokenizer.
+
+        This method processes a given caption (or a list of captions) using the provided tokenizer.
+        It sets the maximum length to the tokenizer's model maximum length, applies padding and
+        truncation to ensure uniform length, and converts the tokens to PyTorch tensors. The method
+        is particularly useful for preparing textual data for input to machine learning models,
+        especially those in NLP.
+
+        Parameters:
+        captions (str or list of str): The caption(s) to be tokenized. Can be a single string or a list of strings.
+        tokenizer (Tokenizer): The tokenizer to be used. This should be an instance of a pre-trained tokenizer
+                               compatible with the model being used, typically provided by NLP libraries like
+                               Hugging Face's Transformers.
+
+        Returns:
+        Tensor: A PyTorch tensor of token IDs corresponding to the input captions. If multiple captions are
+                provided, the tensor will have a leading dimension equal to the number of captions.
+        """
         inputs = tokenizer(
             captions, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
         )
         return inputs.input_ids.squeeze()
-
-
-def tokenize_captions(captions, tokenizer):
-    inputs = tokenizer(
-        captions, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
-    )
-    return inputs.input_ids
-
-
-def matplotlib_show(img, mask, masked_img):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
-    ax1.imshow(img)
-    ax1.title.set_text('images')
-    ax2.imshow(mask)
-    ax2.title.set_text('masks')
-    ax3.imshow(masked_img)
-    ax3.title.set_text('masked_images')
-    fig.tight_layout(pad=2.0)
-    plt.show()
 
 
 def cv2_show(input_img, target_img):
