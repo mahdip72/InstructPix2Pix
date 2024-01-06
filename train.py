@@ -1,21 +1,23 @@
 import argparse
+import datetime
 import logging
-import shutil
-import yaml
-from box import Box
 import math
 import os
+import shutil
+
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
+import yaml
 from accelerate import Accelerator
 from accelerate.utils import ProjectConfiguration, set_seed
-from tqdm.auto import tqdm
-import datetime
-from data import SDDataset, tokenize_captions
-from utils import prepare_optimizer, snr_loss, get_logging
-from model import prepare_model, save_diffuser_checkpoint
+from box import Box
 from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
+
+from instruct_pix2pix.data import SDDataset, tokenize_captions
+from instruct_pix2pix.model import prepare_model, save_diffuser_checkpoint
+from instruct_pix2pix.utils import prepare_optimizer, snr_loss, get_logging
 
 
 def main(yaml_config_path):
@@ -59,17 +61,17 @@ def main(yaml_config_path):
 
     if config.gradient_checkpointing:
         unet.enable_gradient_checkpointing()
-        logger.info(f"enable gradient checkpointing for low memory training")
+        logger.info("enable gradient checkpointing for low memory training")
 
     # Enable TF32 for faster training on Ampere GPUs,
     # cf https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices
     if config.train_settings.allow_tf32:
         torch.backends.cuda.matmul.allow_tf32 = True
-        logger.info(f"enable Tensor Float 32 training")
+        logger.info("enable Tensor Float 32 training")
 
     train_dataset = SDDataset(tokenizer=tokenizer, config=config)
 
-    logger.info(f"prepare training dataset")
+    logger.info("prepare training dataset")
     
     # DataLoaders creation:
     train_dataloader = DataLoader(
@@ -79,7 +81,7 @@ def main(yaml_config_path):
         num_workers=config.train_settings.num_workers,
         pin_memory=True
     )
-    logger.info(f"prepare dataloader from dataset")
+    logger.info("prepare dataloader from dataset")
 
     # Prepare everything with our `accelerator`.
     unet, train_dataloader = accelerator.prepare(unet, train_dataloader)
@@ -92,14 +94,14 @@ def main(yaml_config_path):
     parameters = unet.parameters()
 
     optimizer, lr_scheduler = prepare_optimizer(config, accelerator, parameters)
-    logger.info(f"create a new optimizer and lr scheduler")
+    logger.info("create a new optimizer and lr scheduler")
 
     optimizer, lr_scheduler = accelerator.prepare(optimizer, lr_scheduler)
-    logger.info(f"prepare optimizer and lr scheduler for accelerator")
+    logger.info("prepare optimizer and lr scheduler for accelerator")
 
     if config.use_ema:
         ema_unet.to(accelerator.device)
-        logger.info(f"use ema to train unet module")
+        logger.info("use ema to train unet module")
 
     # For mixed precision training we cast the text_encoder and vae weights to half-precision
     # as these models are only used for inference, keeping weights in full precision is not required.
@@ -276,7 +278,7 @@ if __name__ == "__main__":
         description="Train an Instruct Pix2Pix model")
 
     parser.add_argument(
-        "--config_path", "-c", help="The location of config file", default='./config.yaml')
+        "--config_path", "-c", help="The location of config file", default='./configs/config.yaml')
 
     args = parser.parse_args()
     config_path = args.config_path

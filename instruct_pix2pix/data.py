@@ -1,19 +1,20 @@
-import random
-import torchvision.transforms.functional as function
 import io
-import numpy as np
-from torchvision import transforms
-import torch
-from PIL import Image
-from torch.utils.data import Dataset
+import random
+
 import cv2
-import yaml
-import torchvision
+import numpy as np
 import pandas as pd
+import torch
+import torchvision
+import torchvision.transforms.functional as function
+import yaml
+from PIL import Image
+from box import Box
+from torch.utils.data import Dataset
+from torchvision import transforms
 from torchvision.transforms.functional import hflip
 from torchvision.transforms.functional import rotate
 from transformers import CLIPTokenizer
-from box import Box
 
 
 def load_parquet_dataset(data_path):
@@ -293,8 +294,8 @@ def tokenize_captions(captions, tokenizer):
 def cv2_show(input_img, target_img):
     input_img = (input_img + 1) * 0.5
     target_img = (target_img + 1) * 0.5
-    cv2.imshow(f'input_img', input_img[..., ::-1])
-    cv2.imshow(f'target_img', target_img[..., ::-1])
+    cv2.imshow('input_img', input_img[..., ::-1])
+    cv2.imshow('target_img', target_img[..., ::-1])
     cv2.waitKey(0)
 
 

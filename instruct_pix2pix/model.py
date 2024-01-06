@@ -1,12 +1,13 @@
 import os
+
 import torch
 import torch.nn as nn
-from transformers import CLIPTextModel, CLIPTokenizer
 from diffusers import AutoencoderKL, DDPMScheduler, UNet2DConditionModel, StableDiffusionInstructPix2PixPipeline
 from diffusers import ControlNetModel
 from diffusers.training_utils import EMAModel
 from diffusers.utils.import_utils import is_xformers_available
 from packaging import version
+from transformers import CLIPTextModel, CLIPTokenizer
 
 
 def adapt_unet_for_pix2pix(unet):
@@ -37,14 +38,14 @@ def prepare_model(config, logger):
     tokenizer = CLIPTokenizer.from_pretrained(
         config.pretrained_model_name_or_path, subfolder="tokenizer", revision=config.revision
     )
-    logger.info(f"load tokenizer")
+    logger.info("load tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(
         config.pretrained_model_name_or_path, subfolder="text_encoder", revision=config.revision
     )
-    logger.info(f"load text encoder")
+    logger.info("load text encoder")
 
     vae = AutoencoderKL.from_pretrained(config.pretrained_model_name_or_path, subfolder="vae", revision=config.revision)
-    logger.info(f"load vae")
+    logger.info("load vae")
 
     unet = UNet2DConditionModel.from_pretrained(
         config.pretrained_model_name_or_path, subfolder="unet", revision=config.non_ema_revision
@@ -129,7 +130,7 @@ def save_diffuser_checkpoint(accelerator, config, unet, ema_unet, text_encoder, 
 
         save_path = os.path.join(logging_dir, 'diffusers_checkpoint')
         pipeline.save_pretrained(save_path)
-        logger.info(f"save diffusion format checkpoint")
+        logger.info("save diffusion format checkpoint")
 
 
 def resume_from_checkpoint(accelerator, num_update_steps_per_epoch, config):
