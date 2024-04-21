@@ -9,34 +9,43 @@ which is trained using a special [dataset](https://huggingface.co/datasets/timbr
 For a better understanding of what Instruct Pix2Pix can do, you can read a blog post from
 [Hugging Face](https://huggingface.co/blog/instruction-tuning-sd).
 
-## Install
+## Installation
+To use this project, install the corresponding requirement.txt file in your environment. Or you can follow 
+the install.sh file to install the dependencies in your conda environment.
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install one of the requirements.txt files 
-as the following. Please refer to the Requirements section for more detail.
+### Install using requirement file
+Follow these steps to install the required packages using the requirements.txt file:
+1. Create a new python env.
+2. Activate the environment you have just created.
+3. Install the requirements using the following command:
 
-```bash
+```commandline
 pip install -r requirements.txt
 ```
 
+### Install using SH file
+Create a conda environment using: `conda create -n myenv python=3.10`. Then, do as the following commands to
+install the required packages inside the conda environment.
 
-## Requirements
-+ Python 3.9
-+ PyTorch: 2.0.1
+First, make the install.sh file executable by running the following command:
+```commandline
+chmod +x install.sh
+```
+
+Then, run the following command to install the required packages inside the conda environment:
+```commandline
+bash install.sh
+```
 
 
-It's crucial to pay attention to the requirements.txt file to make sure all necessary components are installed.
-The versions of accelerator, diffusers, transformers (Huggingface), and PyTorch you use can affect what features
-are available during training and inference. For example, PyTorch 2.0 switches from standard attention to 
+__Note__: It's crucial to pay attention to the dependencies to make sure all necessary components are installed.
+The versions of accelerator, diffusers, transformers, PyTorch and xformers you use can affect what features
+are available during training and inference. Sometimes you need to change the version of libraries to make it work 
+flawlessly For example, PyTorch 2.0 switches from standard attention to 
 flash attention. Also, newer versions of accelerator have a different setup for accelerator_checkpoint compared 
-to older versions. Sticking to the guidelines in the requirements.txt file is the simplest approach.
-
-
-## Use
-Clone the repository to your local machine
-Install the required dependencies (listed in the 'Install' section above)
-
-
-__Note__: You could set your custom checkpoints or huggingface checkpoint, e.g., `timbrooks/instruct-pix2pix`.
+to older versions. In addition, xformers library needs a specific version of PyTorch to work properly. We added a verified
+requirements file that works well on ubuntu os and therefore, you can start with that. Sticking to the guidelines in the
+requirements.txt file is the simplest approach. 
 
 
 ### Prepare Dataset
@@ -44,7 +53,7 @@ Download a test dataset ([link](https://huggingface.co/datasets/fusing/instructp
 add its directory in the config file.
 
 
-This section will be completed...
+You can create a custom dataset by yourself.
 
 ### Train
 
@@ -52,7 +61,7 @@ After data preparation and carefully setting the config.yaml file, run the follo
 the train folder.
 
 ```bash
-python ./train.py --config_path './config.yaml'
+accelerate launch train.py --config_path './config.yaml'
  ```
 
 #### Note:
