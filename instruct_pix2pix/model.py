@@ -94,36 +94,22 @@ def prepare_model(config, logger):
     return vae, text_encoder, unet, noise_scheduler, tokenizer, ema_unet
 
 
-def prepare_controlnet_module(unet, config, logger):
-    if config.controlnet_module.checkpoint:
-        controlnet = ControlNetModel.from_pretrained(config.controlnet_module.checkpoint)
-    else:
-        controlnet = ControlNetModel.from_unet(UNet2DConditionModel.from_pretrained(
-            "runwayml/stable-diffusion-v1-5", subfolder="unet", revision=config.non_ema_revision
-        ))
-        logger.info("Initializing controlnet weights from unet")
-    controlnet.train()
-    if config.enable_xformers_memory_efficient_attention:
-        controlnet.enable_xformers_memory_efficient_attention()
-    return controlnet
-
-
-def save_diffuser_checkpoint(accelerator, config, unet, ema_unet, text_encoder, vae, logging_dir, logger, controlnet=False):
+def save_diffuser_checkpoint(accelerator, config, unet, ema_unet, text_encoder, vae, logging_dir, logger,
+                             controlnet=False):
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
         unet = accelerator.unwrap_model(unet)
         if config.use_ema:
             ema_unet.copy_to(unet.parameters())
-        
+
         pipeline = StableDiffusionInstructPix2PixPipeline.from_pretrained(
             config.pretrained_model_name_or_path,
-            controlnet=accelerator.unwrap_model(controlnet) if config.controlnet_module.enable else None,
             text_encoder=accelerator.unwrap_model(text_encoder),
             vae=accelerator.unwrap_model(vae),
             unet=unet,
-            safety_checker = None,
-            requires_safety_checker = False,
+            safety_checker=None,
+            requires_safety_checker=False,
             revision=config.revision,
         )
         # pipeline.requires_safety_checker = False
