@@ -299,7 +299,7 @@ class ZoomDataset(Dataset):
         # Find all images in the directory based on the desired format and add their path into the samples list
         for root, _, files in os.walk(data_path):
             for img_path in files:
-                if img_path.endswith(".png", ".jpg", ".jpeg"):
+                if img_path.endswith((".png", ".jpg", ".jpeg")):
                     samples.append(os.path.join(root, img_path))
         return samples
 
@@ -446,7 +446,7 @@ def cv2_show(input_img, target_img):
 
 
 if __name__ == '__main__':
-    yaml_config_path = 'config.yaml'
+    yaml_config_path = '../configs/config.yaml'
     with open(yaml_config_path) as file:
         dict_config = yaml.safe_load(file)
 
@@ -455,8 +455,8 @@ if __name__ == '__main__':
     tokenizer = CLIPTokenizer.from_pretrained(
         "timbrooks/instruct-pix2pix", subfolder="tokenizer"
     )
-    train_dataset = SDDataset(tokenizer, config)
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, num_workers=0,
+    train_dataset = ZoomDataset(tokenizer, config)
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=False, num_workers=0,
                                                    batch_size=1)
 
     for i in range(10):
