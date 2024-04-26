@@ -369,7 +369,7 @@ class ZoomDataset(Dataset):
         zoomed_image = image.crop((left, top, right, bottom))
 
         # Calculate the zoom scale percentage relative to the original image size
-        zoom_scale = (zoom_size / min(image.size)) * 100
+        zoom_scale = (min(image.size)/ zoom_size) * 100
 
         return zoomed_image, zoom_scale
 
