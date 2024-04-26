@@ -379,7 +379,7 @@ class ZoomDataset(Dataset):
         input_image = self.random_crop_square(input_image, self.base_size)
         target_image, zoom_scale = self.center_zoom(input_image, self.final_size)
 
-        captions = f"Zoom {zoom_scale} percent into the center of the image."
+        captions = f"Zoom {int(zoom_scale)} percent into the center of the image."
 
         input_image = input_image.resize((self.final_size, self.final_size))
         target_image = target_image.resize((self.final_size, self.final_size))
