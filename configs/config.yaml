@@ -11,13 +11,14 @@ checkpointing_steps: 2500
 tensorboard: True
 pretrained_model_name_or_path:  timbrooks/instruct-pix2pix  # runwayml/stable-diffusion-v1-5, stabilityai/stable-diffusion-2-1, timbrooks/instruct-pix2pix  #Path to pretrained model or model identifier from huggingface.co/models.
 adapt_unet: False # True or False
+model_compile: True
 
 resume_from_checkpoint:
   enable: False
   accelerator_path: /resume/to/checkpoint/save_results/2020-20-20__20-20-20/accelerator_checkpoints/checkpoint-2000
 
 train_settings:
-  data_dir: /mnt/hdd8/mehdi/datasets/instruct_pix2pix/open_image/images
+  data_dir: /mnt/hdd8/mehdi/datasets/instruct_pix2pix/open_image/images/train
   swap_input_output: False
   allow_tf32: False
   mixed_precision: "fp16" # ["no", "fp16", "bf16"]
@@ -26,7 +27,7 @@ train_settings:
   max_train_steps: 10000
   num_workers: 2
   shuffle: True
-  final_resolution: 512
+  final_resolution: 384
   conditioning_dropout_prob: 0.05
   min_snr_loss:
     enable: True
@@ -38,7 +39,7 @@ valid_settings:
   num_images: 5
   epoch: 20
   prompt_list: ['make the sky yellow']
-  resolution: 512
+  resolution: 384
   num_inference_steps: 30
   image_guidance_scale: 1.5
   guidance_scale: 7.5

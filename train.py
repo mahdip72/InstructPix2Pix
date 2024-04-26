@@ -15,7 +15,7 @@ from box import Box
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from instruct_pix2pix.data import SDDataset, tokenize_captions
+from instruct_pix2pix.data import SDDataset, ZoomDataset, tokenize_captions
 from instruct_pix2pix.model import prepare_model, save_diffuser_checkpoint
 from instruct_pix2pix.utils import prepare_optimizer, snr_loss, get_logging
 
@@ -69,7 +69,7 @@ def main(yaml_config_path):
         torch.backends.cuda.matmul.allow_tf32 = True
         logger.info("enable Tensor Float 32 training")
 
-    train_dataset = SDDataset(tokenizer=tokenizer, config=config)
+    train_dataset = ZoomDataset(tokenizer=tokenizer, config=config)
 
     logger.info("prepare training dataset")
     
@@ -114,6 +114,14 @@ def main(yaml_config_path):
     # Move text_encode and vae to gpu and cast to weight_dtype
     text_encoder.to(accelerator.device, dtype=weight_dtype)
     vae.to(accelerator.device, dtype=weight_dtype)
+
+    # compile model to train faster and efficiently
+    if config.model_compile:
+        vae = torch.compile(vae)
+        text_encoder = torch.compile(text_encoder)
+        unet = torch.compile(unet)
+        if accelerator.is_main_process:
+            logging.info('compile model is done')
 
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / config.train_settings.gradient_accumulation_steps)
