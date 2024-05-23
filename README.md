@@ -104,4 +104,5 @@ artifacts at higher levels. Below are two GIFs demonstrating the model's perform
 ![Zoom Example 1](files/example_1.gif)
 ![Zoom Example 2](files/example_2.gif)
 
-
+This project is a great example of how InstructPix2Pix can be fine-tuned for various tasks, and we are excited to see
+what other creative applications the community will come up with!
