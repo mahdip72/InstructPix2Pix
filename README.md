@@ -90,14 +90,14 @@ image.save("result.png")
 
 ### Custom Training
 
-To enhance the InstructPix2Pix model's capabilities, we conducted a unique training session using approximately 
-1 million images from the Open Image V5 dataset. The objective was to fine-tune the model to perform zooming operations
+To show the InstructPix2Pix model's capabilities, we did a cool and unique training on approximately 
+1 million images from the Open Image V5 dataset. The objective was to fine-tune the model to perform zooming on images
 based on textual instructions specifying the zoom percentage. This involved collecting images, generating target images
-with random center zooms, and creating corresponding text prompts. The training utilized the Adam optimizer with a 
-learning rate schedule from 5e-5 to 1e-6, employing cosine annealing and gradient accumulation over nearly 4 epochs
-(10,000 steps). The fine-tuned model effectively zooms into images per the given instructions, showing promising 
-capabilities up to 200% zoom, with minor artifacts at higher levels. Below are two GIFs demonstrating the model's
-performance in zooming tasks.
+with random center zooms, and creating corresponding text prompts. The whole process is based on self-supervised 
+learning. The training utilized the Adam optimizer with a learning rate schedule from 5e-5 to 1e-6, employing 
+cosine annealing and gradient accumulation over nearly 4 epochs (10,000 steps). The fine-tuned model effectively
+zooms into images per the given instructions, showing promising capabilities up to 200% zoom, with minor
+artifacts at higher levels. Below are two GIFs demonstrating the model's performance in zooming tasks.
 
 **Example Prompt**: “Zoom 150 percent into the center of the image.”
 
