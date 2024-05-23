@@ -7,11 +7,11 @@ gradient_checkpointing: True
 seed: 42
 logging_dir: save_results
 checkpoints_total_limit: 1 # did not work
-checkpointing_steps: 2500
+checkpointing_steps: 5000
 tensorboard: True
-pretrained_model_name_or_path:  timbrooks/instruct-pix2pix  # runwayml/stable-diffusion-v1-5, stabilityai/stable-diffusion-2-1, timbrooks/instruct-pix2pix  #Path to pretrained model or model identifier from huggingface.co/models.
-adapt_unet: False # True or False
-model_compile: True
+pretrained_model_name_or_path:  stabilityai/stable-diffusion-2-1  # runwayml/stable-diffusion-v1-5, stabilityai/stable-diffusion-2-1, timbrooks/instruct-pix2pix  #Path to pretrained model or model identifier from huggingface.co/models.
+adapt_unet: True # True or False
+model_compile: False
 
 resume_from_checkpoint:
   enable: False
@@ -22,10 +22,10 @@ train_settings:
   swap_input_output: False
   allow_tf32: False
   mixed_precision: "fp16" # ["no", "fp16", "bf16"]
-  batch_size: 8
-  gradient_accumulation_steps: 16
-  max_train_steps: 10000
-  num_workers: 2
+  batch_size: 64
+  gradient_accumulation_steps: 4
+  max_train_steps: 30000
+  num_workers: 4
   shuffle: True
   final_resolution: 384
   conditioning_dropout_prob: 0.05
@@ -48,7 +48,7 @@ optimizer:
   learning_rate: 5e-5  # Initial learning rate (after the potential warmup period) to use.
   scale_lr: False # Scale the learning rate by the number of GPUs, gradient accumulation steps, and batch size.
   lr_scheduler: cosine  # Choose between ["linear", "cosine", "cosine_with_restarts", "polynomial", "constant", "constant_with_warmup"]
-  lr_warmup_steps: 300 # Number of steps for the warmup in the lr scheduler.
+  lr_warmup_steps: 512 # Number of steps for the warmup in the lr scheduler.
   use_8bit_adam: True # Whether to use 8-bit Adam from bitsandbytes.
   adam_beta1: 0.9
   adam_beta2: 0.999

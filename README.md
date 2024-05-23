@@ -86,6 +86,22 @@ pipe.to("cuda")
 image = pipe(prompt='make the sky blue', image=img, image_guidance_scale=1.5).images[0]
 
 image.save("result.png")
-
 ```
+
+### Custom Training
+
+To enhance the InstructPix2Pix model's capabilities, we conducted a unique training session using approximately 
+1 million images from the Open Image V5 dataset. The objective was to fine-tune the model to perform zooming operations
+based on textual instructions specifying the zoom percentage. This involved collecting images, generating target images
+with random center zooms, and creating corresponding text prompts. The training utilized the Adam optimizer with a 
+learning rate schedule from 5e-5 to 1e-6, employing cosine annealing and gradient accumulation over nearly 4 epochs
+(10,000 steps). The fine-tuned model effectively zooms into images per the given instructions, showing promising 
+capabilities up to 200% zoom, with minor artifacts at higher levels. Below are two GIFs demonstrating the model's
+performance in zooming tasks.
+
+**Example Prompt**: “Zoom 150 percent into the center of the image.”
+
+![Zoom Example 1](files/example_1.gif)
+![Zoom Example 2](files/example_2.gif)
+
 
