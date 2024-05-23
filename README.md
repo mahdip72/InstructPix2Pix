@@ -9,6 +9,13 @@ which is trained using a special [dataset](https://huggingface.co/datasets/timbr
 For a better understanding of what Instruct Pix2Pix can do, you can read a blog post from
 [Hugging Face](https://huggingface.co/blog/instruction-tuning-sd).
 
+This repository is built on top of the Diffusers library to customize the InstructPix2Pix model by fine-tune it.
+This repo supports training on multiple GPUs with the help of accelerator library. The model can be fine-tuned on
+a custom dataset and used for inference. The model can be used
+for various tasks such as image-to-image translation, image generation, and image editing. 
+
+For now, this repository supports Stable Diffusion 1.5 and 2.0 and 2.1.
+
 ## Installation
 To use this project, install the corresponding requirement.txt file in your environment. Or you can follow 
 the install.sh file to install the dependencies in your conda environment.
