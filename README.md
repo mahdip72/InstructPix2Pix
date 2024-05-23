@@ -12,9 +12,9 @@ For a better understanding of what Instruct Pix2Pix can do, you can read a blog 
 This repository is built on top of the Diffusers library to customize the InstructPix2Pix model by fine-tune it.
 This repo supports training on multiple GPUs with the help of accelerator library. The model can be fine-tuned on
 a custom dataset and used for inference. The model can be used
-for various tasks such as image-to-image translation, image generation, and image editing. 
+for various tasks including image-to-image translation and image editing. 
 
-For now, this repository supports Stable Diffusion 1.5 and 2.0 and 2.1.
+For now, this repository supports Stable Diffusion 1.5 and 2.0 and 2.1 as the starting point of InstructPixPix model.
 
 ## Installation
 To use this project, install the corresponding requirement.txt file in your environment. Or you can follow 
