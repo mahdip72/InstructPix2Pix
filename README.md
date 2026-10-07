@@ -27,11 +27,13 @@ Follow these steps to install the required packages using the requirements.txt f
 3. Install the requirements using the following command:
 
 ```commandline
-pip install -r requirements.txt
+python -m pip install torch==2.13.0 torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cu126
+python -m pip install xformers==0.0.35 --index-url https://download.pytorch.org/whl/cu126
+python -m pip install -r requirements.txt
 ```
 
 ### Install using SH file
-Create a conda environment using: `conda create -n myenv python=3.10`. Then, do as the following commands to
+Create a fresh Python 3.10-3.12 environment, for example `conda create -n myenv python=3.12`, and activate it. Run all requirement commands from the repository root so the local wheel path resolves. Then use the following commands to
 install the required packages inside the conda environment.
 
 First, make the install.sh file executable by running the following command:
@@ -45,14 +47,39 @@ bash install.sh
 ```
 
 
-__Note__: It's crucial to pay attention to the dependencies to make sure all necessary components are installed.
-The versions of accelerator, diffusers, transformers, PyTorch and xformers you use can affect what features
-are available during training and inference. Sometimes you need to change the version of libraries to make it work 
-flawlessly For example, PyTorch 2.0 switches from standard attention to 
-flash attention. Also, newer versions of accelerator have a different setup for accelerator_checkpoint compared 
-to older versions. In addition, xformers library needs a specific version of PyTorch to work properly. We added a verified
-requirements file that works well on ubuntu os and therefore, you can start with that. Sticking to the guidelines in the
-requirements.txt file is the simplest approach. 
+The security dependency set uses PyTorch 2.13.0, torchvision 0.28.0, Diffusers 0.41.0,
+Transformers 5.19.0 and xFormers 0.0.35. xFormers now uses the PyTorch stable ABI for
+2.10 and later. CUDA 11.8 builds are no longer supported by this dependency set;
+select an [official PyTorch 2.13 CUDA channel](https://pytorch.org/get-started/previous-versions/)
+and a compatible NVIDIA driver. `install.sh` accepts `PYTORCH_CHANNEL=cpu`, `cu126`
+(default), or `cu130` and installs the same pinned requirements. GPU installation
+also selects xFormers from the same channel: the PyPI wheel targets CUDA 12.8
+and should not be mixed with the CUDA 12.6 or 13.0 builds. It no
+longer mixes independently selected conda and pip framework versions.
+
+Accelerate includes a narrow local checkpoint-loading security patch because
+upstream 1.15.0 still has an unfixed traversal issue. Its [source patch, hashes and
+rebuild instructions](vendor/README.md) are committed beside the required wheel.
+Do not replace it with an unpatched upstream installation. Unused Datasets,
+torchaudio, torchmetrics, cosine-warmup and Datasets helper requirements were
+removed; Parquet loading continues through pandas/PyArrow. The model structure,
+UNet adaptation, default training settings and optimizer choices are unchanged.
+
+Offline checks can run with a CPU PyTorch installation:
+
+```sh
+PYTORCH_CHANNEL=cpu bash install.sh
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 OMP_NUM_THREADS=1 python -m unittest discover -s tests -v
+```
+
+These tests import project modules, load tiny local CLIP/VAE/UNet components,
+verify checkpoint and Parquet/image round trips, and reject unsafe shard indexes.
+They perform no training or diffusion sampling and download no pretrained models
+or datasets. The CPU environment does not load the xFormers CUDA extension;
+the local component test disables CUDA attention. POSIX named-pipe tests skip on Windows. Full GPU training,
+multi-GPU resume, xFormers CUDA kernels and pretrained model output equivalence
+have not been evaluated; use a fresh environment and retain original checkpoints
+when migrating from the old framework stack.
 
 
 ### Prepare Dataset

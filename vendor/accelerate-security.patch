@@ -1,0 +1,63 @@
+--- a/accelerate/utils/modeling.py
++++ b/accelerate/utils/modeling.py
+@@ -1937,8 +1937,52 @@
+-        checkpoint_folder = os.path.split(index_filename)[0]
+-        with open(index_filename) as f:
+-            index = json.loads(f.read())
+-
+-        if "weight_map" in index:
+-            index = index["weight_map"]
+-        checkpoint_files = sorted(list(set(index.values())))
+-        checkpoint_files = [os.path.join(checkpoint_folder, f) for f in checkpoint_files]
++        # Local security patch for GHSA-4j2p-28q2-5m79. Validate every
++        # shard before opening any of them, including POSIX named pipes.
++        import ntpath
++        import stat
++
++        checkpoint_folder = os.path.realpath(os.path.dirname(index_filename) or ".")
++        index_path = os.path.realpath(index_filename)
++        if (os.path.commonpath([checkpoint_folder, index_path]) != checkpoint_folder
++                or not stat.S_ISREG(os.stat(index_path).st_mode)):
++            raise ValueError("Checkpoint index must be a regular file inside its directory")
++        with open(index_path) as f:
++            index = json.load(f)
++        if not isinstance(index, dict):
++            raise ValueError("Checkpoint index must contain a nonempty weight map")
++        index = index.get("weight_map", index)
++        if not isinstance(index, dict) or not index:
++            raise ValueError("Checkpoint index must contain a nonempty weight map")
++
++        checkpoint_files = []
++        for name in index.values():
++            if (not isinstance(name, str) or not name or "\0" in name
++                    or ":" in name or os.path.isabs(name) or ntpath.splitdrive(name)[0]
++                    or name.startswith("\\") or ".." in name.replace("\\", "/").split("/")):
++                raise ValueError("Checkpoint shards must use contained relative paths")
++            shard = os.path.realpath(os.path.join(checkpoint_folder, *name.replace("\\", "/").split("/")))
++            try:
++                contained = os.path.commonpath([checkpoint_folder, shard]) == checkpoint_folder
++                regular = stat.S_ISREG(os.stat(shard).st_mode)
++            except (OSError, ValueError) as error:
++                raise ValueError("Checkpoint shard is missing or invalid") from error
++            if not contained or not regular:
++                raise ValueError("Checkpoint shard must be a regular file inside its directory")
++            checkpoint_files.append(shard)
++        checkpoint_files = sorted(set(checkpoint_files))
++
++    if index_filename is None and os.path.isdir(checkpoint):
++        # Directory-selected whole checkpoints must obey the same boundary.
++        import stat
++
++        checkpoint_folder = os.path.realpath(checkpoint)
++        validated_files = []
++        for filename in checkpoint_files:
++            filename = os.path.realpath(filename)
++            try:
++                contained = os.path.commonpath([checkpoint_folder, filename]) == checkpoint_folder
++                regular = stat.S_ISREG(os.stat(filename).st_mode)
++            except (OSError, ValueError) as error:
++                raise ValueError("Checkpoint file is missing or invalid") from error
++            if not contained or not regular:
++                raise ValueError("Checkpoint file must be a regular file inside its directory")
++            validated_files.append(filename)
++        checkpoint_files = validated_files
