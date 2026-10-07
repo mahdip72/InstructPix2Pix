@@ -1,0 +1,2 @@
+# Required: exclude unpatched upstream Accelerate and other local builds.
+accelerate==1.15.0+instructpix2pix.1
