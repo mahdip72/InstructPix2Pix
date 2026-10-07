@@ -4,6 +4,11 @@
 distribution of upstream Accelerate 1.15.0. The Apache 2.0 license, package
 contents and command entry points are retained in the wheel.
 
+The public base-version pin in `requirements.txt` is for dependency-scanner
+compatibility. Its mandatory `accelerate-constraints.txt` restricts pip to this
+exact patched local build, located through `--find-links ./vendor`. Do not remove
+the constraint or install the public base-version pin by itself.
+
 Upstream wheel SHA256:
 `97eacca0b73e45cb867dbf8c5d5d4dc32219544300e0c8992c7334dc2ef33cec`
 
