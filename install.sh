@@ -2,7 +2,7 @@
 set -euo pipefail
 cd -- "$(dirname -- "$0")"
 
-# Run in a fresh Python 3.10-3.12 environment. Select an official wheel channel;
+# Run in a fresh Python 3.11-3.12 environment. Select an official wheel channel;
 # CUDA builds require a compatible NVIDIA driver. CPU is for offline checks.
 channel="${PYTORCH_CHANNEL:-cu126}"
 case "$channel" in

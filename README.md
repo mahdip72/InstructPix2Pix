@@ -20,6 +20,8 @@ For now, this repository supports Stable Diffusion 1.5 and 2.0 and 2.1 as the st
 To use this project, install the corresponding requirement.txt file in your environment. Or you can follow 
 the install.sh file to install the dependencies in your conda environment.
 
+Python 3.11 or 3.12 is required for Pillow 13.0.0, which fixes image parser and encoder security issues. Python 3.10 is no longer supported by this dependency set.
+
 ### Install using requirement file
 Follow these steps to install the required packages using the requirements.txt file:
 1. Create a new python env.
@@ -33,7 +35,7 @@ python -m pip install -r requirements.txt
 ```
 
 ### Install using SH file
-Create a fresh Python 3.10-3.12 environment, for example `conda create -n myenv python=3.12`, and activate it. Run all requirement commands from the repository root so the local wheel path resolves. Then use the following commands to
+Create a fresh Python 3.11-3.12 environment, for example `conda create -n myenv python=3.12`, and activate it. Run all requirement commands from the repository root so the local wheel path resolves. Then use the following commands to
 install the required packages inside the conda environment.
 
 First, make the install.sh file executable by running the following command:
